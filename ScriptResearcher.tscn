@@ -1,0 +1,79 @@
+[gd_scene load_steps=2 format=2]
+
+[sub_resource type="GDScript" id=1]
+script/source = "#GustLSant
+#v1.0.0
+#03.20.2022
+
+### WHAT THIS SCRIT DOES ###
+#THIS SCRIPT SHOWS ANY ARCHIVES THAT CONTAINS A WANTED CODE 
+# USEFUL IF YOU WANT TO KNOW WHICH SCRIPTS INTERACT WITH AN OBJECT IN A EVENT
+# OR IF YOU DON'T KNOW WHICH NODE WAS DOING SOMETHING TO OTHER OBJECTS
+
+### HOW TO USE ###
+#CHANGE THE VARIABLE \"path_script\" TO YOUR SCRIPT'S DIRECTORY (IF YOU WANT TO SEACH IN BUILT-IN SCRIPTS, YOU WILL HAVE TO CHANGE TO YOUR SCENE'S DIRECTORY)
+#CANGE THE VARIABLE \"searched_code\" TO THE CODE YOU WANNA SEARCH IN ALL SCRIPTS
+#RUN THE SCENE (IT WILL BE CLOSED AUTOMATICALLY)
+
+extends Node
+
+export (String) var path_script:String = \"res://Scripts\"
+export (String) var searched_code:String = \"nodeX.queue_free()\"
+
+
+func _ready()->void:
+	var list = search_string(list_files(path_script), searched_code)
+	
+	if(list.size() > 0):
+		print(\"ARCHIVES THAT CONTAIN THE SEARCHED CODE:\")
+		for i in list:
+			print(i)
+	else:
+		print(\"NO FILE FOUND CONTAINING THE SEARCHED CODE\")
+	
+	get_tree().quit()
+
+
+func list_files(path:String)->Array:
+	var dir_files:Array = []
+	var dir:Directory = Directory.new()
+	dir.open(path)
+	dir.list_dir_begin()
+	
+	while true:
+		var file_name = dir.get_next()
+		if file_name == \"\": #if dont have any more files
+			break
+		elif not file_name.begins_with(\".\"):
+			if(file_name.find(\".\") == -1): #is a folder
+				dir_files += list_files(dir.get_current_dir() + \"/\" + file_name)
+			else: #is a file
+				dir_files.append(dir.get_current_dir() + \"/\" + file_name)
+	
+	dir.list_dir_end()
+	return dir_files
+
+
+func search_string(_directories:Array, _searched_string:String)->Array:
+	var valid_directories:Array
+	
+	for i in _directories:
+		var file = File.new()
+		var err:int = file.open(i, File.READ)
+		
+		if(err == 0):
+			var content:String = file.get_as_text()
+			if(content.find(_searched_string) != -1):
+				valid_directories.append(i)
+		else:
+			print(\"DIRECTORY OPENING ERROR\", \"\\nDIRECTORY: \", i, \"\\nERROR CODE: \", err)
+			file.close()
+			get_tree().quit()
+		
+		file.close()
+	
+	return valid_directories
+"
+
+[node name="ScriptResearcher" type="Node"]
+script = SubResource( 1 )

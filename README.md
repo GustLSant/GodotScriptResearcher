@@ -1,3 +1,3 @@
 # GodotScriptResearcher
-#GustLSant
+- GustLSant
 THIS SCRIPT SHOWS ANY ARCHIVES THAT CONTAINS A WANTED CODE
